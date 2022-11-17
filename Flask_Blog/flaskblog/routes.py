@@ -3,7 +3,7 @@ from flask import render_template, url_for, flash, redirect
 from flaskblog import app,db,bcrypt
 from flaskblog.forms import RegistrationForm, LoginForm
 from flaskblog.models import User, Post
-from flask_login import login_user
+from flask_login import login_user, current_user, logout_user
 
 
 
@@ -37,10 +37,13 @@ def about():
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
+    if current_user.is_authenticated:
+       return redirect(url_for('home'))
+
     form = RegistrationForm()
     if form.validate_on_submit():
         hashedpw = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-        user = User(username=form.username.data, email = form.email.data,password=hashedpw)
+        user = User(username=form.username.data, email=form.email.data, password=hashedpw)
         db.session.add(user)
         db.session.commit()
         flash(f'Your account has been created!,{form.username.data} can now login', 'success')
@@ -50,6 +53,10 @@ def register():
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
+
+    if current_user.is_authenticated:
+       return redirect(url_for('home'))
+
     form = LoginForm()
     if form.validate_on_submit():
             user = User.query.filter_by(email=form.email.data).first()
@@ -58,4 +65,14 @@ def login():
                 return redirect('home')
             else:
               flash('Login Unsuccessful. Please check email and password', 'danger')
-            return render_template('login.html', title='Login', form=form)
+    return render_template('login.html', title='Login', form=form)
+
+
+@app.route("/logout")
+def logout():
+    logout_user()
+    return redirect(url_for('home'))
+
+@app.route("/account")
+def account():
+    return redirect(url_for('account', title='Account'))
