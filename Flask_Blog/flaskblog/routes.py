@@ -9,7 +9,7 @@ from flaskblog.models import User, Post
 from flask_login import login_user, current_user, logout_user, login_required
 from flask_mail import Message
 
-
+#This is the beginnig
 @app.route("/")
 @app.route("/home")
 def home():
